@@ -1,0 +1,54 @@
+{
+  "name": "@compass-food/mcp",
+  "version": "0.2.0",
+  "description": "MCP server for Compass DaaS - explainable dietary decision layer for AI agents",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "compass-mcp": "dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/compass-food/compass-mcp.git"
+  },
+  "homepage": "https://compassfoodtechnologies.com",
+  "bugs": {
+    "url": "https://github.com/compass-food/compass-mcp/issues"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest run"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "compass",
+    "dietary",
+    "vegan",
+    "restaurant",
+    "ai-agent",
+    "anthropic",
+    "claude"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^4.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
