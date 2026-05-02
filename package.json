@@ -1,6 +1,7 @@
 {
   "name": "@compass-food/mcp",
-  "version": "0.2.0",
+  "version": "0.2.1",
+  "license": "MIT",
   "description": "MCP server for Compass DaaS - explainable dietary decision layer for AI agents",
   "type": "module",
   "main": "dist/index.js",
