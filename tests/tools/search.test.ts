@@ -7,7 +7,7 @@ describe("compass_search", () => {
     const parsed = SearchInputSchema.parse({
       query: "strict vegan ramen in Brooklyn",
       user_profile: {
-        diet: "vegan_strict",
+        diet: "strict_vegan",
         allergens: ["peanut"],
         exclude_cross_contamination: true,
       },

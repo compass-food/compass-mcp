@@ -7,7 +7,7 @@ describe("compass_decide_fit", () => {
     const parsed = DecideFitInputSchema.parse({
       compass_id: "rest_xyz789",
       user_profile: {
-        diet: "vegan_strict",
+        diet: "strict_vegan",
       },
     });
 
@@ -17,6 +17,17 @@ describe("compass_decide_fit", () => {
 
   it("requires compass_id and user_profile.diet", () => {
     expect(() => DecideFitInputSchema.parse({ compass_id: "" })).toThrow();
+  });
+
+  it("rejects legacy diet values that the API does not accept", () => {
+    expect(() =>
+      DecideFitInputSchema.parse({
+        compass_id: "rest_xyz789",
+        user_profile: {
+          diet: "vegan_strict",
+        },
+      }),
+    ).toThrow();
   });
 
   it("calls /v1/decision/restaurant-fit payload with mode removed into request options", async () => {
@@ -32,7 +43,7 @@ describe("compass_decide_fit", () => {
     const result = await decideFitTool.handler(client, {
       compass_id: "rest_xyz789",
       user_profile: {
-        diet: "vegan_strict",
+        diet: "strict_vegan",
         exclude_cross_contamination: true,
       },
       mode: "fast",
@@ -42,7 +53,7 @@ describe("compass_decide_fit", () => {
       {
         compass_id: "rest_xyz789",
         user_profile: {
-          diet: "vegan_strict",
+          diet: "strict_vegan",
           exclude_cross_contamination: true,
         },
       },

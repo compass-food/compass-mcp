@@ -1,11 +1,17 @@
 import { z } from "zod";
 
 const DietSchema = z.enum([
-  "vegan_strict",
-  "vegan_friendly",
+  "strict_vegan",
   "vegetarian",
   "pescatarian",
-  "omnivore",
+  "gluten_free",
+  "halal",
+  "kosher",
+  "low_fodmap",
+  "nut_free",
+  "dairy_free",
+  "egg_free",
+  "shellfish_free",
 ]);
 
 const AllergenSchema = z.enum([
@@ -79,7 +85,19 @@ export const searchInputJsonSchema = {
       properties: {
         diet: {
           type: "string",
-          enum: ["vegan_strict", "vegan_friendly", "vegetarian", "pescatarian", "omnivore"],
+          enum: [
+            "strict_vegan",
+            "vegetarian",
+            "pescatarian",
+            "gluten_free",
+            "halal",
+            "kosher",
+            "low_fodmap",
+            "nut_free",
+            "dairy_free",
+            "egg_free",
+            "shellfish_free",
+          ],
         },
         allergens: {
           type: "array",
@@ -133,7 +151,19 @@ export const decideFitInputJsonSchema = {
       properties: {
         diet: {
           type: "string",
-          enum: ["vegan_strict", "vegan_friendly", "vegetarian", "pescatarian", "omnivore"],
+          enum: [
+            "strict_vegan",
+            "vegetarian",
+            "pescatarian",
+            "gluten_free",
+            "halal",
+            "kosher",
+            "low_fodmap",
+            "nut_free",
+            "dairy_free",
+            "egg_free",
+            "shellfish_free",
+          ],
         },
         allergens: { type: "array", items: { type: "string" } },
         exclude_cross_contamination: { type: "boolean", default: true },
