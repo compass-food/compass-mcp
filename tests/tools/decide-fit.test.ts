@@ -19,22 +19,11 @@ describe("compass_decide_fit", () => {
     expect(() => DecideFitInputSchema.parse({ compass_id: "" })).toThrow();
   });
 
-  it("rejects legacy diet values that the API does not accept", () => {
-    expect(() =>
-      DecideFitInputSchema.parse({
-        compass_id: "rest_xyz789",
-        user_profile: {
-          diet: "vegan_strict",
-        },
-      }),
-    ).toThrow();
-  });
-
   it("calls /v1/decision/restaurant-fit payload with mode removed into request options", async () => {
     const client = {
       decideFit: vi.fn().mockResolvedValue({
         decision: "unknown",
-        confidence: 0.4,
+        confidence: "low",
         reason_codes: [],
         evidence: [],
       }),

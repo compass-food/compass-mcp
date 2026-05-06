@@ -16,7 +16,7 @@ const baseUrl = resolveBaseUrl();
 const client = new CompassClient({ apiKey, baseUrl });
 
 const server = new Server(
-  { name: "compass-mcp", version: "0.2.2" },
+  { name: "compass-mcp", version: "0.3.0" },
   { capabilities: { tools: {} } },
 );
 

@@ -1,73 +1,90 @@
 import { z } from "zod";
+import {
+  COMPASS_DIETS,
+  type CompassDecisionRequestApi,
+  type CompassEnrichRequestApi,
+  type CompassSearchRequestApi,
+} from "../types.js";
 
-const DietSchema = z.enum([
-  "strict_vegan",
-  "vegetarian",
-  "pescatarian",
-  "gluten_free",
-  "halal",
-  "kosher",
-  "low_fodmap",
-  "nut_free",
-  "dairy_free",
-  "egg_free",
-  "shellfish_free",
-]);
+const TEXT_MAX = 500;
+const PROFILE_ITEM_MAX = 64;
+const PROFILE_LIST_MAX = 20;
+const SEARCH_LIMIT_MAX = 50;
+const SEARCH_RADIUS_MAX_M = 50_000;
 
-const AllergenSchema = z.enum([
-  "peanut",
-  "tree_nut",
-  "dairy",
-  "egg",
-  "soy",
-  "gluten",
-  "shellfish",
-  "fish",
-  "sesame",
-]);
+const dietError = `diet must be one of: ${COMPASS_DIETS.join(", ")}`;
+
+export const DietSchema = z.enum(COMPASS_DIETS, {
+  errorMap: () => ({ message: dietError }),
+});
+
+const BoundedTextSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(TEXT_MAX)
+  .refine((value) => !value.includes("\0"), "field must not contain null bytes");
+
+const ProfileStringSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(PROFILE_ITEM_MAX)
+  .refine((value) => !value.includes("\0"), "profile values must not contain null bytes");
+
+const UserProfileSchema = z
+  .object({
+    diet: DietSchema.optional(),
+    allergens: z.array(ProfileStringSchema).max(PROFILE_LIST_MAX).optional(),
+    exclude_cross_contamination: z.boolean().optional(),
+    dietary_rules: z.array(ProfileStringSchema).max(PROFILE_LIST_MAX).optional(),
+  })
+  .strict();
 
 export const ModeSchema = z.enum(["fast", "rich"]).default("rich");
 
-export const SearchInputSchema = z.object({
-  query: z.string().min(1).describe("Natural language query, e.g. 'strict vegan ramen in Brooklyn under $20'"),
-  user_profile: z
-    .object({
-      diet: DietSchema.optional(),
-      allergens: z.array(AllergenSchema).optional(),
-      exclude_cross_contamination: z.boolean().optional(),
-    })
-    .optional(),
-  location: z
-    .object({
-      lat: z.number(),
-      lng: z.number(),
-      radius_m: z.number().int().positive().max(50000),
-    })
-    .optional(),
-  limit: z.number().int().positive().max(20).default(10),
-  mode: ModeSchema,
-});
+const LocationSchema = z
+  .object({
+    lat: z.number().gte(-90).lte(90),
+    lng: z.number().gte(-180).lte(180),
+    radius_m: z.number().int().min(1).max(SEARCH_RADIUS_MAX_M).optional(),
+  })
+  .strict();
+
+export const SearchInputSchema = z
+  .object({
+    query: BoundedTextSchema.describe("Natural language query, e.g. 'strict vegan ramen in Brooklyn under $20'"),
+    user_profile: UserProfileSchema.optional(),
+    location: LocationSchema.optional(),
+    limit: z.number().int().min(1).max(SEARCH_LIMIT_MAX).default(10),
+    include_evidence: z.boolean().optional(),
+    mode: ModeSchema,
+  })
+  .strict();
 
 export const EnrichInputSchema = z
   .object({
-    name: z.string().min(1).describe("Restaurant name"),
-    address: z.string().optional().describe("Street address (improves match)"),
-    google_place_id: z.string().optional().describe("Google Place ID (highest match confidence)"),
+    compass_id: BoundedTextSchema.optional().describe("Compass restaurant ID for direct lookup"),
+    name: BoundedTextSchema.optional().describe("Restaurant name"),
+    address: BoundedTextSchema.optional().describe("Street address (improves match)"),
+    google_place_id: BoundedTextSchema.optional().describe("Google Place ID (highest match confidence)"),
   })
-  .refine((data) => !!data.address || !!data.google_place_id, {
-    message: "Either address or google_place_id is required",
+  .strict()
+  .refine((data) => Boolean(data.compass_id || (data.name && (data.address || data.google_place_id))), {
+    message: "Provide compass_id, or name plus address or google_place_id",
+    path: ["compass_id"],
   });
 
-export const DecideFitInputSchema = z.object({
-  compass_id: z.string().min(1).describe("Compass restaurant ID, obtained from compass_search or compass_enrich_restaurant"),
-  user_profile: z.object({
-    diet: DietSchema,
-    allergens: z.array(z.string()).optional(),
-    exclude_cross_contamination: z.boolean().default(true),
-    dietary_rules: z.array(z.string()).optional(),
-  }),
-  mode: ModeSchema,
-});
+export const DecideFitInputSchema = z
+  .object({
+    compass_id: BoundedTextSchema.describe("Compass restaurant ID, obtained from compass_search or compass_enrich_restaurant"),
+    user_profile: UserProfileSchema.extend({
+      diet: DietSchema,
+      exclude_cross_contamination: z.boolean().default(true),
+    }).strict(),
+    mode: ModeSchema,
+  })
+  .strict();
 
 export type SearchInput = z.infer<typeof SearchInputSchema>;
 export type EnrichInput = z.infer<typeof EnrichInputSchema>;
@@ -85,28 +102,23 @@ export const searchInputJsonSchema = {
       properties: {
         diet: {
           type: "string",
-          enum: [
-            "strict_vegan",
-            "vegetarian",
-            "pescatarian",
-            "gluten_free",
-            "halal",
-            "kosher",
-            "low_fodmap",
-            "nut_free",
-            "dairy_free",
-            "egg_free",
-            "shellfish_free",
-          ],
+          enum: COMPASS_DIETS,
         },
         allergens: {
           type: "array",
           items: {
             type: "string",
-            enum: ["peanut", "tree_nut", "dairy", "egg", "soy", "gluten", "shellfish", "fish", "sesame"],
+            minLength: 1,
+            maxLength: PROFILE_ITEM_MAX,
           },
+          maxItems: PROFILE_LIST_MAX,
         },
         exclude_cross_contamination: { type: "boolean" },
+        dietary_rules: {
+          type: "array",
+          items: { type: "string", minLength: 1, maxLength: PROFILE_ITEM_MAX },
+          maxItems: PROFILE_LIST_MAX,
+        },
       },
       additionalProperties: false,
     },
@@ -115,12 +127,13 @@ export const searchInputJsonSchema = {
       properties: {
         lat: { type: "number" },
         lng: { type: "number" },
-        radius_m: { type: "integer", minimum: 1, maximum: 50000 },
+        radius_m: { type: "integer", minimum: 1, maximum: SEARCH_RADIUS_MAX_M, default: 5000 },
       },
-      required: ["lat", "lng", "radius_m"],
+      required: ["lat", "lng"],
       additionalProperties: false,
     },
-    limit: { type: "integer", minimum: 1, maximum: 20, default: 10 },
+    limit: { type: "integer", minimum: 1, maximum: SEARCH_LIMIT_MAX, default: 10 },
+    include_evidence: { type: "boolean", default: true },
     mode: { type: "string", enum: ["fast", "rich"], default: "rich" },
   },
   required: ["query"],
@@ -129,12 +142,23 @@ export const searchInputJsonSchema = {
 
 export const enrichInputJsonSchema = {
   type: "object",
+  anyOf: [{ required: ["compass_id"] }, { required: ["name", "address"] }, { required: ["name", "google_place_id"] }],
   properties: {
-    name: { type: "string", minLength: 1, description: "Restaurant name" },
-    address: { type: "string", description: "Street address (improves match)" },
-    google_place_id: { type: "string", description: "Google Place ID (highest match confidence)" },
+    compass_id: {
+      type: "string",
+      minLength: 1,
+      maxLength: TEXT_MAX,
+      description: "Compass restaurant ID for direct lookup",
+    },
+    name: { type: "string", minLength: 1, maxLength: TEXT_MAX, description: "Restaurant name" },
+    address: { type: "string", minLength: 1, maxLength: TEXT_MAX, description: "Street address (improves match)" },
+    google_place_id: {
+      type: "string",
+      minLength: 1,
+      maxLength: TEXT_MAX,
+      description: "Google Place ID (highest match confidence)",
+    },
   },
-  required: ["name"],
   additionalProperties: false,
 } as const;
 
@@ -151,23 +175,19 @@ export const decideFitInputJsonSchema = {
       properties: {
         diet: {
           type: "string",
-          enum: [
-            "strict_vegan",
-            "vegetarian",
-            "pescatarian",
-            "gluten_free",
-            "halal",
-            "kosher",
-            "low_fodmap",
-            "nut_free",
-            "dairy_free",
-            "egg_free",
-            "shellfish_free",
-          ],
+          enum: COMPASS_DIETS,
         },
-        allergens: { type: "array", items: { type: "string" } },
+        allergens: {
+          type: "array",
+          items: { type: "string", minLength: 1, maxLength: PROFILE_ITEM_MAX },
+          maxItems: PROFILE_LIST_MAX,
+        },
         exclude_cross_contamination: { type: "boolean", default: true },
-        dietary_rules: { type: "array", items: { type: "string" } },
+        dietary_rules: {
+          type: "array",
+          items: { type: "string", minLength: 1, maxLength: PROFILE_ITEM_MAX },
+          maxItems: PROFILE_LIST_MAX,
+        },
       },
       required: ["diet"],
       additionalProperties: false,
@@ -177,3 +197,10 @@ export const decideFitInputJsonSchema = {
   required: ["compass_id", "user_profile"],
   additionalProperties: false,
 } as const;
+
+const _searchInputTypeCheck: Omit<SearchInput, "mode"> extends CompassSearchRequestApi ? true : never = true;
+const _enrichInputTypeCheck: EnrichInput extends CompassEnrichRequestApi ? true : never = true;
+const _decisionInputTypeCheck: Omit<DecideFitInput, "mode"> extends CompassDecisionRequestApi ? true : never = true;
+void _searchInputTypeCheck;
+void _enrichInputTypeCheck;
+void _decisionInputTypeCheck;

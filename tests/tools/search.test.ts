@@ -22,7 +22,7 @@ describe("compass_search", () => {
     expect(() =>
       SearchInputSchema.parse({
         query: "vegan tacos",
-        limit: 50,
+        limit: 51,
         location: { lat: 40.7, lng: -73.9, radius_m: 100000 },
       }),
     ).toThrow();
