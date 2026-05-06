@@ -12,7 +12,7 @@ describe("staging API integration", () => {
       baseUrl: resolveBaseUrl({
         env: {
           ...process.env,
-          COMPASS_BASE_URL: process.env.COMPASS_BASE_URL ?? "https://api.compassfoodtechnologies.com",
+          COMPASS_BASE_URL: process.env.COMPASS_BASE_URL ?? "https://daas-api-veganmapai-1a8b7.a.run.app",
         },
       }),
     });

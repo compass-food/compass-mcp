@@ -15,8 +15,20 @@ describe("compass_enrich_restaurant", () => {
     });
   });
 
+  it("validates direct compass_id lookup", () => {
+    expect(
+      EnrichInputSchema.parse({
+        compass_id: "rest_xyz789",
+      }),
+    ).toEqual({
+      compass_id: "rest_xyz789",
+    });
+  });
+
   it("requires address or google_place_id", () => {
-    expect(() => EnrichInputSchema.parse({ name: "Buddha Bodai" })).toThrow("Either address or google_place_id is required");
+    expect(() => EnrichInputSchema.parse({ name: "Buddha Bodai" })).toThrow(
+      "Provide compass_id, or name plus address or google_place_id",
+    );
   });
 
   it("calls /v1/enrich/restaurant payload unchanged", async () => {
