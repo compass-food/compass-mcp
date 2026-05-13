@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.1 - 2026-05-13
+- Add descriptions to all MCP tool parameters, including nested user profile and location fields, so registries and clients can guide tool use more clearly.
+- Add `outputSchema` metadata for `compass_search`, `compass_enrich_restaurant`, and `compass_decide_fit`.
+- Add MCP tool annotations marking Compass tools as read-only, non-destructive, idempotent open-world lookups.
+- Defer Compass API key resolution until tool-call time so clients and registries can list/scan tools before a key is configured.
+- Add tool metadata tests that validate the definitions against the MCP SDK list-tools result schema.
+- Bump MCP server identification version to `0.3.1`.
+
 ## 0.3.0 - 2026-05-05
 - Port the post-PR #527 B1 schema sync from the Compass monorepo so the published MCP package matches the canonical Compass DaaS contract.
 - Add `src/types.ts` as a self-contained mirror of the canonical Compass enums (diets, decisions, confidences, risk flags, evidence tiers/types) so the npm package no longer relies on monorepo-local `shared/`.
