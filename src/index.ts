@@ -11,12 +11,27 @@ import { decideFitTool } from "./tools/decide-fit.js";
 import { enrichTool } from "./tools/enrich.js";
 import { searchTool } from "./tools/search.js";
 
-const apiKey = resolveApiKey();
-const baseUrl = resolveBaseUrl();
-const client = new CompassClient({ apiKey, baseUrl });
+function createClient(): CompassClient {
+  return new CompassClient({
+    apiKey: resolveApiKey(),
+    baseUrl: resolveBaseUrl(),
+  });
+}
+
+const client = {
+  search(body: unknown, options?: { mode?: "fast" | "rich" }): Promise<unknown> {
+    return createClient().search(body, options);
+  },
+  enrichRestaurant(body: unknown): Promise<unknown> {
+    return createClient().enrichRestaurant(body);
+  },
+  decideFit(body: unknown, options?: { mode?: "fast" | "rich" }): Promise<unknown> {
+    return createClient().decideFit(body, options);
+  },
+};
 
 const server = new Server(
-  { name: "compass-mcp", version: "0.3.0" },
+  { name: "compass-mcp", version: "0.3.1" },
   { capabilities: { tools: {} } },
 );
 

@@ -1,3 +1,30 @@
+# v0.3.1
+
+Smithery quality metadata release. This version keeps the same Compass REST behavior while making the MCP server easier for registries and clients to inspect, score, and present.
+
+## What's new
+
+- Added descriptions for all tool parameters, including nested profile, allergen preference, and location fields.
+- Added structured `outputSchema` metadata for all three tools.
+- Added MCP annotations marking the tools as read-only, non-destructive, idempotent open-world lookups.
+- Deferred API key resolution until tool-call time so clients can list and inspect tools before a key is configured.
+- Added metadata tests that validate the tool definitions against the MCP SDK schema.
+
+## Tools
+
+- `compass_search` - natural-language restaurant dietary search.
+- `compass_enrich_restaurant` - restaurant matching and enrichment.
+- `compass_decide_fit` - conservative dietary fit decisions with reason codes.
+
+## Links
+
+- GitHub: https://github.com/compass-food/compass-mcp
+- npm: https://www.npmjs.com/package/@compass-food/mcp
+- API docs: https://api.compassfoodtechnologies.com/openapi
+- Sandbox keys: https://compassfoodtechnologies.com
+
+## Previous releases
+
 # v0.3.0
 
 B1 schema sync release. The published MCP package now mirrors the canonical Compass DaaS contract end-to-end, with strict input validation and a drift guard that fails the build before any future regression can ship.

@@ -7,8 +7,27 @@ export type ToolResult = CallToolResult;
 
 export interface ToolDefinition {
   name: string;
+  title: string;
   description: string;
   inputSchema: object;
+  outputSchema: object;
+  annotations: {
+    title: string;
+    readOnlyHint: boolean;
+    destructiveHint: boolean;
+    idempotentHint: boolean;
+    openWorldHint: boolean;
+  };
+}
+
+export function readOnlyToolAnnotations(title: string): ToolDefinition["annotations"] {
+  return {
+    title,
+    readOnlyHint: true,
+    destructiveHint: false,
+    idempotentHint: true,
+    openWorldHint: true,
+  };
 }
 
 export function successResult(data: unknown): ToolResult {
