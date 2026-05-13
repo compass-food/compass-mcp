@@ -1,5 +1,7 @@
 # Compass DaaS MCP
 
+[![Smithery badge](https://smithery.ai/badge/compassfoodtech/compass-mcp)](https://smithery.ai/servers/compassfoodtech/compass-mcp)
+
 MCP server for Compass DaaS. It exposes three restaurant dietary decision tools over the Model Context Protocol and calls the Compass REST API with your API key.
 
 ## Quick Start
