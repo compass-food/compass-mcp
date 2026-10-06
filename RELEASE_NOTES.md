@@ -1,3 +1,16 @@
+# v0.3.2
+
+Instant signup release. A missing key points at a working sandbox key, and an omitted Decide cross-contamination flag no longer forces `unknown`.
+
+## What's new
+
+- Missing-key message links to `https://compassfoodtechnologies.com/signup?src=mcp` and no longer includes a sample key.
+- Requests send `X-Compass-Client: mcp/0.3.2`.
+- `exclude_cross_contamination` defaults to false. Send true only when unknown shared-prep evidence should return `unknown`.
+- Request diets match the launch API. Free-from diet tokens and `user_profile.allergens` are no longer accepted.
+
+## Previous releases
+
 # v0.3.1
 
 Smithery quality metadata release. This version keeps the same Compass REST behavior while making the MCP server easier for registries and clients to inspect, score, and present.

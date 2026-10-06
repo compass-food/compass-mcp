@@ -6,7 +6,7 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import { resolveApiKey, resolveBaseUrl } from "./auth.js";
-import { CompassClient } from "./client.js";
+import { CompassClient, MCP_PACKAGE_VERSION } from "./client.js";
 import { decideFitTool } from "./tools/decide-fit.js";
 import { enrichTool } from "./tools/enrich.js";
 import { searchTool } from "./tools/search.js";
@@ -31,7 +31,7 @@ const client = {
 };
 
 const server = new Server(
-  { name: "compass-mcp", version: "0.3.1" },
+  { name: "compass-mcp", version: MCP_PACKAGE_VERSION },
   { capabilities: { tools: {} } },
 );
 

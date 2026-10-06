@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.2 - 2026-10-06
+- Point a missing API key at instant signup. The message is one sentence plus the two config lines, with no sample key.
+- Send `X-Compass-Client: mcp/0.3.2` on every Compass request.
+- Change the omitted `exclude_cross_contamination` Decide default from true to false. Callers that want the old unknown result must send true.
+- Drop request diet values `nut_free`, `dairy_free`, `egg_free`, and `shellfish_free`, and drop `user_profile.allergens`. Those fields are not part of the launch API contract.
+
 ## 0.3.1 - 2026-05-13
 - Add descriptions to all MCP tool parameters, including nested user profile and location fields, so registries and clients can guide tool use more clearly.
 - Add `outputSchema` metadata for `compass_search`, `compass_enrich_restaurant`, and `compass_decide_fit`.

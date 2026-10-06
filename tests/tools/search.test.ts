@@ -8,7 +8,6 @@ describe("compass_search", () => {
       query: "strict vegan ramen in Brooklyn",
       user_profile: {
         diet: "strict_vegan",
-        allergens: ["peanut"],
         exclude_cross_contamination: true,
       },
       location: { lat: 40.7, lng: -73.9, radius_m: 5000 },

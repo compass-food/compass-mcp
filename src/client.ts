@@ -1,4 +1,11 @@
+import { createRequire } from "node:module";
 import { ProblemDetailsSchema } from "./schemas/output.js";
+
+const require = createRequire(import.meta.url);
+const pkg = require("../package.json") as { version: string };
+
+export const MCP_PACKAGE_VERSION = pkg.version;
+export const COMPASS_CLIENT_HEADER = `mcp/${MCP_PACKAGE_VERSION}`;
 
 export interface CompassClientOptions {
   apiKey: string;
@@ -65,6 +72,7 @@ export class CompassClient {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
       "X-Compass-API-Key": this.apiKey,
+      "X-Compass-Client": COMPASS_CLIENT_HEADER,
     };
 
     if (options.mode) {

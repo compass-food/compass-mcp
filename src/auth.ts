@@ -4,16 +4,9 @@ import { join } from "node:path";
 
 export const DEFAULT_BASE_URL = "https://api.compassfoodtechnologies.com";
 
-export const MISSING_API_KEY_MESSAGE = `Compass MCP requires an API key.
-
-Get a free Sandbox key (no credit card required):
-  https://compassfoodtechnologies.com/signup
-
-Then set it:
-  export COMPASS_API_KEY=cmp_test_...
-
-Or save to ~/.compass/config.json:
-  { "api_key": "cmp_test_..." }`;
+export const MISSING_API_KEY_MESSAGE = `No API key configured. A working key takes ~30 seconds: https://compassfoodtechnologies.com/signup?src=mcp
+export COMPASS_API_KEY=<paste the key from signup>
+{ "api_key": "<paste the key from signup>" }`;
 
 export interface CompassConfig {
   api_key?: string;
