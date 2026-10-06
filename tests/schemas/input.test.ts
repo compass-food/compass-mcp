@@ -35,10 +35,6 @@ const EXPECTED_DIETS = [
   "halal",
   "kosher",
   "low_fodmap",
-  "nut_free",
-  "dairy_free",
-  "egg_free",
-  "shellfish_free",
 ] as const;
 
 const EXPECTED_DECISIONS = ["fit", "not_fit", "unknown"] as const;

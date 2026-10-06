@@ -13,7 +13,7 @@ npx -y @compass-food/mcp
 Set `COMPASS_API_KEY` before starting the server:
 
 ```bash
-export COMPASS_API_KEY=cmp_test_your_sandbox_key
+export COMPASS_API_KEY="<paste the key from signup>"
 ```
 
 For staging or local testing, set:
@@ -35,7 +35,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
       "command": "npx",
       "args": ["-y", "@compass-food/mcp"],
       "env": {
-        "COMPASS_API_KEY": "cmp_test_your_sandbox_key"
+        "COMPASS_API_KEY": "<paste the key from signup>"
       }
     }
   }
@@ -53,7 +53,7 @@ Add to Cursor MCP settings (`~/.cursor/mcp.json` globally, or `.cursor/mcp.json`
       "command": "npx",
       "args": ["-y", "@compass-food/mcp"],
       "env": {
-        "COMPASS_API_KEY": "cmp_test_your_sandbox_key"
+        "COMPASS_API_KEY": "<paste the key from signup>"
       }
     }
   }
@@ -70,12 +70,12 @@ command = "npx"
 args = ["-y", "@compass-food/mcp"]
 
 [mcp_servers.compass.env]
-COMPASS_API_KEY = "cmp_test_your_sandbox_key"
+COMPASS_API_KEY = "<paste the key from signup>"
 ```
 
 ### Get an API key
 
-[Sign up free](https://compassfoodtechnologies.com/signup) — 1,000 Compass credits/month, no credit card required.
+[Sign up](https://compassfoodtechnologies.com/signup?src=mcp) — a working sandbox key is saved immediately, with 250 credits for 72 hours. Confirming email raises the shared free allowance to 1,000 credits per month.
 
 ## Tools
 
@@ -89,7 +89,6 @@ The `mode` tool argument is sent to the REST API as the `X-Compass-Mode` header.
   "query": "strict vegan ramen in Brooklyn under $20",
   "user_profile": {
     "diet": "strict_vegan",
-    "allergens": ["peanut"],
     "exclude_cross_contamination": true
   },
   "location": {
@@ -118,13 +117,13 @@ Use `compass_id` for direct lookup, or `name` plus `address` or `google_place_id
 
 Wraps `POST /v1/decision/restaurant-fit`.
 The `mode` tool argument is sent to the REST API as the `X-Compass-Mode` header.
+`exclude_cross_contamination` defaults to false. Version 0.3.2 changes that from the old default of true, which had forced `unknown` on every omitted Decide call. Send true explicitly when unknown shared-prep evidence should return `unknown`.
 
 ```json
 {
   "compass_id": "rest_xyz789",
   "user_profile": {
-    "diet": "strict_vegan",
-    "exclude_cross_contamination": true
+    "diet": "strict_vegan"
   },
   "mode": "rich"
 }
@@ -141,24 +140,18 @@ Config file:
 
 ```json
 {
-  "api_key": "cmp_live_abc123",
+  "api_key": "<paste the key from signup>",
   "base_url": "https://api.compassfoodtechnologies.com"
 }
 ```
 
 ## Privacy
 
-This package sends tool calls only to the configured Compass API base URL. It does not send secondary usage data.
+This v0.1 package sends tool calls only to the configured Compass API base URL. It does not send secondary usage data.
 
 ## Links
 
 - Site: https://compassfoodtechnologies.com
-- Signup: https://compassfoodtechnologies.com/signup
-- API docs: https://api.compassfoodtechnologies.com/openapi
-- Source: https://github.com/compass-food/compass-mcp
-- npm: https://www.npmjs.com/package/@compass-food/mcp
+- Signup: https://compassfoodtechnologies.com/signup?src=mcp
 - Support: support@compassfoodtechnologies.com
-
-## License
-
-MIT
+- License: MIT

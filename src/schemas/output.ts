@@ -22,7 +22,6 @@ export const EvidenceSchema = z
     evidence_id: z.string().optional(),
     type: z.enum(COMPASS_EVIDENCE_TYPES).optional(),
     source: z.string().optional(),
-    fetched_at: z.string().optional(),
     excerpt: z.string().optional(),
     weight: z.enum(["primary", "supporting"]).optional(),
     tier: z.enum(COMPASS_EVIDENCE_TIERS).optional(),
@@ -49,12 +48,14 @@ export const DecisionFieldsSchema = z
     recommended_user_text: z.string().optional(),
     verification_required: z.boolean().optional(),
     compass_request_id: z.string().optional(),
+    last_evaluated_at: z.string().nullable().optional(),
   })
   .passthrough();
 
 export const RestaurantSchema = z
   .object({
     compass_id: z.string(),
+    last_evaluated_at: z.string().nullable().optional(),
     name: z.string().optional(),
     coordinates: z
       .object({
@@ -94,7 +95,6 @@ const evidenceJsonSchema = {
       description: "Evidence source category",
     },
     source: { type: "string", description: "Evidence source URL or source label" },
-    fetched_at: { type: "string", description: "When Compass fetched or observed the evidence, when available" },
     excerpt: { type: "string", description: "Short source excerpt or paraphrase, when available" },
     weight: { type: "string", enum: ["primary", "supporting"], description: "Relative evidence weight" },
     tier: { type: "string", enum: COMPASS_EVIDENCE_TIERS, description: "Compass evidence tier" },

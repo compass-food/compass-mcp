@@ -3,6 +3,8 @@
 // monorepo-local shared/ directory at runtime. Tests compare this mirror with
 // the canonical shared file so drift fails before publish.
 
+// Accepted request preference inputs. Safety-sensitive and religious-diet values
+// do not imply public certification/free-from restaurant response facts.
 export const COMPASS_DIETS = [
   "strict_vegan",
   "vegetarian",
@@ -11,10 +13,6 @@ export const COMPASS_DIETS = [
   "halal",
   "kosher",
   "low_fodmap",
-  "nut_free",
-  "dairy_free",
-  "egg_free",
-  "shellfish_free",
 ] as const;
 
 export type CompassDiet = (typeof COMPASS_DIETS)[number];
@@ -51,7 +49,6 @@ export type CompassEvidenceType = (typeof COMPASS_EVIDENCE_TYPES)[number];
 
 export interface CompassUserProfileApi {
   diet?: CompassDiet;
-  allergens?: string[];
   exclude_cross_contamination?: boolean;
   dietary_rules?: string[];
 }

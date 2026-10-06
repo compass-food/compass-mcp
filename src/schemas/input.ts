@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   COMPASS_DIETS,
+  type CompassDiet,
   type CompassDecisionRequestApi,
   type CompassEnrichRequestApi,
   type CompassSearchRequestApi,
@@ -14,9 +15,12 @@ const SEARCH_RADIUS_MAX_M = 50_000;
 
 const dietError = `diet must be one of: ${COMPASS_DIETS.join(", ")}`;
 
-export const DietSchema = z.enum(COMPASS_DIETS, {
-  errorMap: () => ({ message: dietError }),
-});
+export const DietSchema = z
+  .string()
+  .refine(
+    (value): value is CompassDiet => (COMPASS_DIETS as readonly string[]).includes(value),
+    { message: dietError },
+  );
 
 const BoundedTextSchema = z
   .string()
@@ -35,11 +39,6 @@ const ProfileStringSchema = z
 const UserProfileSchema = z
   .object({
     diet: DietSchema.optional().describe("Dietary preference to evaluate against Compass evidence"),
-    allergens: z
-      .array(ProfileStringSchema)
-      .max(PROFILE_LIST_MAX)
-      .optional()
-      .describe("Allergens or ingredients the user wants to avoid; handled conservatively as user preferences"),
     exclude_cross_contamination: z
       .boolean()
       .optional()
@@ -97,7 +96,7 @@ export const DecideFitInputSchema = z
     compass_id: BoundedTextSchema.describe("Compass restaurant ID, obtained from compass_search or compass_enrich_restaurant"),
     user_profile: UserProfileSchema.extend({
       diet: DietSchema,
-      exclude_cross_contamination: z.boolean().default(true),
+      exclude_cross_contamination: z.boolean().default(false),
     }).strict(),
     mode: ModeSchema,
   })
@@ -125,16 +124,6 @@ export const searchInputJsonSchema = {
           enum: COMPASS_DIETS,
           description:
             "Preference input. Safety-sensitive and religious-diet values are conservative signals, not public certification/free-from restaurant facts.",
-        },
-        allergens: {
-          type: "array",
-          description: "Allergens or ingredients the user wants to avoid; handled conservatively as user preferences",
-          items: {
-            type: "string",
-            minLength: 1,
-            maxLength: PROFILE_ITEM_MAX,
-          },
-          maxItems: PROFILE_LIST_MAX,
         },
         exclude_cross_contamination: {
           type: "boolean",
@@ -229,15 +218,9 @@ export const decideFitInputJsonSchema = {
           description:
             "Preference input. Safety-sensitive and religious-diet values are conservative signals, not public certification/free-from restaurant facts.",
         },
-        allergens: {
-          type: "array",
-          description: "Allergens or ingredients the user wants to avoid; handled conservatively as user preferences",
-          items: { type: "string", minLength: 1, maxLength: PROFILE_ITEM_MAX },
-          maxItems: PROFILE_LIST_MAX,
-        },
         exclude_cross_contamination: {
           type: "boolean",
-          default: true,
+          default: false,
           description: "When true, treat unknown or shared-prep cross-contamination evidence conservatively",
         },
         dietary_rules: {

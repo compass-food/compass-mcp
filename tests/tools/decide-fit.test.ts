@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { DecideFitInputSchema } from "../../src/schemas/input.js";
+import { DecideFitInputSchema, decideFitInputJsonSchema } from "../../src/schemas/input.js";
 import { decideFitTool } from "../../src/tools/decide-fit.js";
 
 describe("compass_decide_fit", () => {
@@ -12,7 +12,7 @@ describe("compass_decide_fit", () => {
     });
 
     expect(parsed.mode).toBe("rich");
-    expect(parsed.user_profile.exclude_cross_contamination).toBe(true);
+    expect(parsed.user_profile.exclude_cross_contamination).toBe(false);
   });
 
   it("requires compass_id and user_profile.diet", () => {
@@ -49,5 +49,35 @@ describe("compass_decide_fit", () => {
       { mode: "fast" },
     );
     expect(result.isError).toBeUndefined();
+  });
+
+  it("omits cross-contamination as false and advertises that default", async () => {
+    const client = {
+      decideFit: vi.fn().mockResolvedValue({ decision: "fit" }),
+    };
+    const parsed = DecideFitInputSchema.parse({
+      compass_id: "rest_xyz789",
+      user_profile: { diet: "strict_vegan" },
+    });
+    expect(parsed.user_profile.exclude_cross_contamination).toBe(false);
+    expect(
+      decideFitInputJsonSchema.properties.user_profile.properties.exclude_cross_contamination.default,
+    ).toBe(false);
+
+    const result = await decideFitTool.handler(client, {
+      compass_id: "rest_xyz789",
+      user_profile: { diet: "strict_vegan" },
+    });
+    expect(client.decideFit).toHaveBeenCalledWith(
+      {
+        compass_id: "rest_xyz789",
+        user_profile: {
+          diet: "strict_vegan",
+          exclude_cross_contamination: false,
+        },
+      },
+      { mode: "rich" },
+    );
+    expect(result.structuredContent).toMatchObject({ decision: "fit" });
   });
 });

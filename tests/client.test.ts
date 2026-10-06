@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { CompassApiError, CompassClient } from "../src/client.js";
+import { CompassApiError, CompassClient, COMPASS_CLIENT_HEADER } from "../src/client.js";
 
 function jsonResponse(body: unknown, status = 200, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), {
@@ -25,6 +25,7 @@ describe("CompassClient", () => {
       headers: {
         "Content-Type": "application/json",
         "X-Compass-API-Key": "cmp_test_123",
+        "X-Compass-Client": COMPASS_CLIENT_HEADER,
         "X-Compass-Mode": "fast",
       },
       body: JSON.stringify({ query: "vegan ramen" }),

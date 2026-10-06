@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MISSING_API_KEY_MESSAGE } from "../auth.js";
 import { CompassApiError } from "../client.js";
 import { ProblemDetailsSchema } from "../schemas/output.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
@@ -55,14 +56,17 @@ export function apiErrorResult(error: CompassApiError): ToolResult {
   const title = parsed.success ? parsed.data.title : error.message;
   const detail = parsed.success ? parsed.data.detail : undefined;
   const requestId = parsed.success ? parsed.data.compass_request_id : undefined;
+  const recoveryUrl =
+    parsed.success && typeof parsed.data.recoveryUrl === "string" ? parsed.data.recoveryUrl : undefined;
   const retryAfter = error.retryAfter ? `\n\nRetry after: ${error.retryAfter}` : "";
+  const recovery = recoveryUrl ? `\n\n${recoveryUrl}` : "";
 
   return {
     isError: true,
     content: [
       {
         type: "text",
-        text: `Compass API error: ${title}\n\nDetails: ${detail ?? "No additional details provided."}\n\nRequest ID: ${requestId ?? "unavailable"}${retryAfter}`,
+        text: `${detail ?? title}${recovery}\n\nCompass API error: ${title}\n\nRequest ID: ${requestId ?? "unavailable"}${retryAfter}`,
       },
     ],
   };
@@ -70,6 +74,12 @@ export function apiErrorResult(error: CompassApiError): ToolResult {
 
 export function unknownErrorResult(error: unknown): ToolResult {
   const message = error instanceof Error ? error.message : "Unknown error";
+  if (message === MISSING_API_KEY_MESSAGE) {
+    return {
+      isError: true,
+      content: [{ type: "text", text: message }],
+    };
+  }
   return {
     isError: true,
     content: [{ type: "text", text: `Compass request failed: ${message}` }],
