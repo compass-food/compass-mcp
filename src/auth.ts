@@ -5,8 +5,8 @@ import { join } from "node:path";
 export const DEFAULT_BASE_URL = "https://api.compassfoodtechnologies.com";
 
 export const MISSING_API_KEY_MESSAGE = `No API key configured. A working key takes ~30 seconds: https://compassfoodtechnologies.com/signup?src=mcp
-export COMPASS_API_KEY=<paste the key from signup>
-{ "api_key": "<paste the key from signup>" }`;
+Set it in your MCP client config env: COMPASS_API_KEY=<paste the key from signup>
+Or save it in ~/.compass/config.json: { "api_key": "<paste the key from signup>" }`;
 
 export interface CompassConfig {
   api_key?: string;
@@ -43,10 +43,6 @@ export function redactApiKey(apiKey: string): string {
     return "****";
   }
   return `${apiKey.slice(0, 4)}...${apiKey.slice(-4)}`;
-}
-
-export function isLikelyCompassApiKey(apiKey: string): boolean {
-  return /^(cmp|cpk)_(test|live|sk|pk)?_?[A-Za-z0-9._-]+$/.test(apiKey);
 }
 
 export function resolveApiKey(options: AuthOptions = {}): string {

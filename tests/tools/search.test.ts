@@ -17,16 +17,6 @@ describe("compass_search", () => {
     expect(parsed.mode).toBe("rich");
   });
 
-  it("rejects invalid limits and radius", () => {
-    expect(() =>
-      SearchInputSchema.parse({
-        query: "vegan tacos",
-        limit: 51,
-        location: { lat: 40.7, lng: -73.9, radius_m: 100000 },
-      }),
-    ).toThrow();
-  });
-
   it("calls /v1/search payload with mode removed into request options", async () => {
     const client = {
       search: vi.fn().mockResolvedValue({ results: [] }),

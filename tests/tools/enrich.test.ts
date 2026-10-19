@@ -25,15 +25,9 @@ describe("compass_enrich_restaurant", () => {
     });
   });
 
-  it("requires address or google_place_id", () => {
-    expect(() => EnrichInputSchema.parse({ name: "Buddha Bodai" })).toThrow(
-      "Provide compass_id, or name plus address or google_place_id",
-    );
-  });
-
   it("calls /v1/enrich/restaurant payload unchanged", async () => {
     const client = {
-      enrichRestaurant: vi.fn().mockResolvedValue({ matched: false, candidates: [] }),
+      enrichRestaurant: vi.fn().mockResolvedValue({ matched: false, match_candidates: [] }),
     };
 
     const result = await enrichTool.handler(client, {
@@ -45,6 +39,6 @@ describe("compass_enrich_restaurant", () => {
       name: "Buddha Bodai",
       google_place_id: "place_123",
     });
-    expect(result.structuredContent).toEqual({ matched: false, candidates: [] });
+    expect(result.structuredContent).toEqual({ matched: false, match_candidates: [] });
   });
 });

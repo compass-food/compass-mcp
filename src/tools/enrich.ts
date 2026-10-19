@@ -16,7 +16,7 @@ export const enrichTool = {
     name: "compass_enrich_restaurant",
     title: "Enrich restaurant",
     description:
-      'Match a restaurant by name and address, then return Compass enrichment data including VeganScore, vegan dietary profile, and evidence. Does not return certification/free-from facts. Returns "matched: false" with candidates if confidence is below threshold.',
+      'Match a restaurant by compass_id, name plus address or Google Place ID, or name plus place. Returns vegan_dining for the vegan dishes relevant to the request, not a complete menu. Send one exact identifier, not both compass_id and google_place_id. matched is true only when identity_status is resolved.',
     inputSchema: enrichInputJsonSchema,
     outputSchema: enrichOutputJsonSchema,
     annotations: readOnlyToolAnnotations("Enrich restaurant"),

@@ -2,12 +2,16 @@
 
 [![Smithery badge](https://smithery.ai/badge/compassfoodtech/compass-mcp)](https://smithery.ai/servers/compassfoodtech/compass-mcp)
 
-MCP server for Compass DaaS. It exposes three restaurant dietary decision tools over the Model Context Protocol and calls the Compass REST API with your API key.
+MCP server for Compass DaaS. It exposes three read-only restaurant tools (search, enrich, decide fit) over the Model Context Protocol and calls the Compass REST API with your API key. Coverage is the 50 US states and Washington, DC.
+
+Compass is not an allergen or safety service.
+
+> This package replaces `@compass-food/mcp`, which is no longer updated. Change `@compass-food/mcp` to `@compassfoodtech/mcp` in your MCP client config.
 
 ## Quick Start
 
 ```bash
-npx -y @compass-food/mcp
+npx -y @compassfoodtech/mcp
 ```
 
 Set `COMPASS_API_KEY` before starting the server:
@@ -33,7 +37,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
   "mcpServers": {
     "compass": {
       "command": "npx",
-      "args": ["-y", "@compass-food/mcp"],
+      "args": ["-y", "@compassfoodtech/mcp"],
       "env": {
         "COMPASS_API_KEY": "<paste the key from signup>"
       }
@@ -51,7 +55,7 @@ Add to Cursor MCP settings (`~/.cursor/mcp.json` globally, or `.cursor/mcp.json`
   "mcpServers": {
     "compass": {
       "command": "npx",
-      "args": ["-y", "@compass-food/mcp"],
+      "args": ["-y", "@compassfoodtech/mcp"],
       "env": {
         "COMPASS_API_KEY": "<paste the key from signup>"
       }
@@ -67,7 +71,7 @@ Edit `~/.codex/config.toml`:
 ```toml
 [mcp_servers.compass]
 command = "npx"
-args = ["-y", "@compass-food/mcp"]
+args = ["-y", "@compassfoodtech/mcp"]
 
 [mcp_servers.compass.env]
 COMPASS_API_KEY = "<paste the key from signup>"
@@ -83,10 +87,21 @@ COMPASS_API_KEY = "<paste the key from signup>"
 
 Wraps `POST /v1/search`.
 The `mode` tool argument is sent to the REST API as the `X-Compass-Mode` header.
+Pass a dish in `dish` and the destination as `place` or `location`, not both. Each result carries `vegan_dining` (up to five relevant vegan dishes and `menu_collected_at`). A dish query with no restaurant that has the dish returns `result_status: "no_match"` and, when one exists within 50 km, `nearest_match`. Set `include_cuisine_matches` to also list same-cuisine restaurants without the dish, marked `cuisine_only`.
 
 ```json
 {
-  "query": "strict vegan ramen in Brooklyn under $20",
+  "query": "ramen",
+  "dish": "ramen",
+  "place": { "country_code": "US", "region": "NY", "city": "Brooklyn" },
+  "user_profile": { "diet": "strict_vegan" },
+  "limit": 5
+}
+```
+
+```json
+{
+  "query": "vegan ramen in Brooklyn",
   "user_profile": {
     "diet": "strict_vegan",
     "exclude_cross_contamination": true
@@ -104,7 +119,7 @@ The `mode` tool argument is sent to the REST API as the `X-Compass-Mode` header.
 ### `compass_enrich_restaurant`
 
 Wraps `POST /v1/enrich/restaurant`.
-Use `compass_id` for direct lookup, or `name` plus `address` or `google_place_id` for fuzzy match.
+Use `compass_id` or `google_place_id` for an exact lookup (one of them, not both), `name` plus `address`, or `name` plus `place`. `matched` is true only when `identity_status` is `resolved`; otherwise `match_candidates` lists possible restaurants.
 
 ```json
 {
@@ -113,11 +128,21 @@ Use `compass_id` for direct lookup, or `name` plus `address` or `google_place_id
 }
 ```
 
+```json
+{
+  "name": "Blossom",
+  "place": { "country_code": "US", "region": "NY", "city": "New York" },
+  "dish": "seitan"
+}
+```
+
 ### `compass_decide_fit`
 
 Wraps `POST /v1/decision/restaurant-fit`.
 The `mode` tool argument is sent to the REST API as the `X-Compass-Mode` header.
-`exclude_cross_contamination` defaults to false. Version 0.3.2 changes that from the old default of true, which had forced `unknown` on every omitted Decide call. Send true explicitly when unknown shared-prep evidence should return `unknown`.
+Send exactly one of `compass_id` or `google_place_id`. `vegan_options` is an alias of `strict_vegan`; set `fully_vegan_only` to accept only fully vegan restaurants. `vegetarian` is judged from vegan evidence; other accepted diets return `unknown` with `DIET_NOT_SUPPORTED`.
+`exclude_cross_contamination` defaults to false. Send true when unknown shared-prep evidence should return `unknown`.
+When a `google_place_id` maps to no restaurant or to several, the response has `resolution` and `coverage` instead of a decision.
 
 ```json
 {
@@ -147,7 +172,7 @@ Config file:
 
 ## Privacy
 
-This v0.1 package sends tool calls only to the configured Compass API base URL. It does not send secondary usage data.
+This package sends tool calls only to the configured Compass API base URL. It does not send secondary usage data.
 
 ## Links
 

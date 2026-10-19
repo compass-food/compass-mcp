@@ -3,19 +3,31 @@
 // monorepo-local shared/ directory at runtime. Tests compare this mirror with
 // the canonical shared file so drift fails before publish.
 
-// Accepted request preference inputs. Safety-sensitive and religious-diet values
-// do not imply public certification/free-from restaurant response facts.
+// Public diet values: the contract `Diet` enum and metadata
+// `supported_enums.diets`. Religious-diet values do not imply public
+// certification restaurant response facts.
 export const COMPASS_DIETS = [
   "strict_vegan",
+  "vegan_options",
   "vegetarian",
   "pescatarian",
-  "gluten_free",
   "halal",
   "kosher",
   "low_fodmap",
 ] as const;
 
-export type CompassDiet = (typeof COMPASS_DIETS)[number];
+export type CompassPublicDiet = (typeof COMPASS_DIETS)[number];
+
+/**
+ * Retired diet values. Still accepted so older clients do not error, but never
+ * assessed and never listed in the tool schemas or descriptions.
+ */
+export const COMPASS_RETIRED_DIETS = ["gluten_free"] as const;
+
+/** Every diet value a request may send. */
+export const COMPASS_ACCEPTED_DIETS = [...COMPASS_DIETS, ...COMPASS_RETIRED_DIETS] as const;
+
+export type CompassDiet = (typeof COMPASS_ACCEPTED_DIETS)[number];
 
 export const COMPASS_DECISIONS = ["fit", "not_fit", "unknown"] as const;
 export type CompassDecision = (typeof COMPASS_DECISIONS)[number];
@@ -49,20 +61,38 @@ export type CompassEvidenceType = (typeof COMPASS_EVIDENCE_TYPES)[number];
 
 export interface CompassUserProfileApi {
   diet?: CompassDiet;
+  fully_vegan_only?: boolean;
   exclude_cross_contamination?: boolean;
   dietary_rules?: string[];
 }
 
+export interface CompassSearchPlaceApi {
+  country_code: string;
+  region?: string;
+  city?: string;
+  radius_m?: number;
+}
+
 export interface CompassSearchRequestApi {
   query: string;
+  dish?: string;
   user_profile?: CompassUserProfileApi;
   location?: {
     lat: number;
     lng: number;
     radius_m?: number;
   };
+  place?: CompassSearchPlaceApi;
   limit?: number;
   include_evidence?: boolean;
+  include_cuisine_matches?: boolean;
+  client_ref?: string;
+}
+
+export interface CompassEnrichPlaceApi {
+  country_code: string;
+  region: string;
+  city: string;
 }
 
 export interface CompassEnrichRequestApi {
@@ -70,11 +100,17 @@ export interface CompassEnrichRequestApi {
   name?: string;
   address?: string;
   google_place_id?: string;
+  dish?: string;
+  user_profile?: CompassUserProfileApi;
+  place?: CompassEnrichPlaceApi;
+  client_ref?: string;
 }
 
 export interface CompassDecisionRequestApi {
-  compass_id: string;
+  compass_id?: string;
+  google_place_id?: string;
   user_profile: CompassUserProfileApi & { diet: CompassDiet };
+  client_ref?: string;
 }
 
 export type CompassMode = "fast" | "rich";

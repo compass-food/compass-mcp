@@ -16,7 +16,7 @@ export const searchTool = {
     name: "compass_search",
     title: "Search restaurants",
     description:
-      'Search restaurants by natural-language dietary query. Returns ranked results with VeganScore, evidence, and confidence. Conservative: returns "unknown" when evidence is insufficient and does not return certification/free-from facts.',
+      'Search restaurants by natural-language query. Pass an explicit dish in dish, and the destination as place (country_code, region, city) or location (lat, lng), not both. Compass covers the 50 US states and DC and returns vegan_dining for the vegan dishes relevant to the request, not a complete menu. Price, hours, and ingredient exclusions are unsupported. Restaurant-name queries also return named_match. Religious and medical diets do not establish a supported vegan verdict.',
     inputSchema: searchInputJsonSchema,
     outputSchema: searchOutputJsonSchema,
     annotations: readOnlyToolAnnotations("Search restaurants"),
