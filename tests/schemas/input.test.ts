@@ -1,24 +1,22 @@
-// Public-repo equivalent of the monorepo cross-file drift guard at
-// compass-food/VeganMapAI:compass-mcp/tests/schemas/input.test.ts.
-//
-// The monorepo test imports COMPASS_DIETS from shared/compass/types.ts to
-// catch drift between the published MCP package and the canonical Compass
-// API contract. The public repo cannot reach shared/, so this test inlines
-// the canonical contract as EXPECTED_* constants.
-//
-// IMPORTANT: these constants must stay byte-for-byte identical to the
-// canonical source-of-truth at compass-food/VeganMapAI:shared/compass/types.ts
-// (and shared/reasonCodes.ts) until canonical-source unification is decided.
-// If the canonical contract changes, update this file and src/types.ts in
-// the same release.
 import { describe, expect, it } from "vitest";
 import {
+  COMPASS_CONFIDENCES as SHARED_COMPASS_CONFIDENCES,
+  COMPASS_DECISIONS as SHARED_COMPASS_DECISIONS,
+  COMPASS_ACCEPTED_DIETS as SHARED_COMPASS_ACCEPTED_DIETS,
+  COMPASS_DIETS as SHARED_COMPASS_DIETS,
+  COMPASS_EVIDENCE_TIERS as SHARED_COMPASS_EVIDENCE_TIERS,
+  COMPASS_EVIDENCE_TYPES as SHARED_COMPASS_EVIDENCE_TYPES,
+  COMPASS_RISK_FLAGS as SHARED_COMPASS_RISK_FLAGS,
+} from "../../../shared/compass/types.js";
+import {
   DecideFitInputSchema,
+  EnrichInputSchema,
   SearchInputSchema,
   decideFitInputJsonSchema,
   searchInputJsonSchema,
 } from "../../src/schemas/input.js";
 import {
+  COMPASS_ACCEPTED_DIETS,
   COMPASS_CONFIDENCES,
   COMPASS_DECISIONS,
   COMPASS_DIETS,
@@ -27,39 +25,6 @@ import {
   COMPASS_RISK_FLAGS,
 } from "../../src/types.js";
 
-const EXPECTED_DIETS = [
-  "strict_vegan",
-  "vegetarian",
-  "pescatarian",
-  "gluten_free",
-  "halal",
-  "kosher",
-  "low_fodmap",
-] as const;
-
-const EXPECTED_DECISIONS = ["fit", "not_fit", "unknown"] as const;
-
-const EXPECTED_CONFIDENCES = ["high", "medium", "low"] as const;
-
-const EXPECTED_RISK_FLAGS = [
-  "cross_contamination_risk",
-  "limited_evidence",
-  "stale_data",
-  "third_party_unverified",
-  "user_report_only",
-  "language_barrier",
-] as const;
-
-const EXPECTED_EVIDENCE_TIERS = ["A", "B"] as const;
-
-const EXPECTED_EVIDENCE_TYPES = [
-  "menu_item",
-  "review_signal",
-  "external_source",
-  "user_report",
-  "restaurant_declared",
-] as const;
-
 const deprecatedDietCases = [
   { label: "swapped strict vegan token", value: ["vegan", "strict"].join("_") },
   { label: "friendly vegan token", value: ["vegan", "friendly"].join("_") },
@@ -67,28 +32,14 @@ const deprecatedDietCases = [
 ] as const;
 
 describe("canonical Compass input schemas", () => {
-  it("keeps the local diet mirror aligned with the canonical Compass contract", () => {
-    expect(COMPASS_DIETS).toEqual(EXPECTED_DIETS);
-  });
-
-  it("keeps the local decision mirror aligned with the canonical Compass contract", () => {
-    expect(COMPASS_DECISIONS).toEqual(EXPECTED_DECISIONS);
-  });
-
-  it("keeps the local confidence mirror aligned with the canonical Compass contract", () => {
-    expect(COMPASS_CONFIDENCES).toEqual(EXPECTED_CONFIDENCES);
-  });
-
-  it("keeps the local risk-flag mirror aligned with the canonical Compass contract", () => {
-    expect(COMPASS_RISK_FLAGS).toEqual(EXPECTED_RISK_FLAGS);
-  });
-
-  it("keeps the local evidence-tier mirror aligned with the canonical Compass contract", () => {
-    expect(COMPASS_EVIDENCE_TIERS).toEqual(EXPECTED_EVIDENCE_TIERS);
-  });
-
-  it("keeps the local evidence-type mirror aligned with the canonical Compass contract", () => {
-    expect(COMPASS_EVIDENCE_TYPES).toEqual(EXPECTED_EVIDENCE_TYPES);
+  it("keeps every local enum mirror aligned with shared Compass types", () => {
+    expect(COMPASS_DIETS).toEqual(SHARED_COMPASS_DIETS);
+    expect(COMPASS_ACCEPTED_DIETS).toEqual(SHARED_COMPASS_ACCEPTED_DIETS);
+    expect(COMPASS_DECISIONS).toEqual(SHARED_COMPASS_DECISIONS);
+    expect(COMPASS_CONFIDENCES).toEqual(SHARED_COMPASS_CONFIDENCES);
+    expect(COMPASS_RISK_FLAGS).toEqual(SHARED_COMPASS_RISK_FLAGS);
+    expect(COMPASS_EVIDENCE_TIERS).toEqual(SHARED_COMPASS_EVIDENCE_TIERS);
+    expect(COMPASS_EVIDENCE_TYPES).toEqual(SHARED_COMPASS_EVIDENCE_TYPES);
   });
 
   it("exposes every canonical diet value in MCP JSON schemas", () => {
@@ -112,6 +63,25 @@ describe("canonical Compass input schemas", () => {
     ).not.toThrow();
   });
 
+  it("accepts the retired gluten_free diet without listing it", () => {
+    expect(COMPASS_DIETS as readonly string[]).not.toContain("gluten_free");
+    expect(
+      SearchInputSchema.safeParse({ query: "dinner", user_profile: { diet: "gluten_free" } }).success,
+    ).toBe(true);
+    expect(
+      DecideFitInputSchema.safeParse({ compass_id: "rest_xyz789", user_profile: { diet: "gluten_free" } })
+        .success,
+    ).toBe(true);
+    const rejected = DecideFitInputSchema.safeParse({
+      compass_id: "rest_xyz789",
+      user_profile: { diet: "paleo" },
+    });
+    expect(rejected.success).toBe(false);
+    if (!rejected.success) {
+      expect(JSON.stringify(rejected.error.issues)).not.toMatch(/gluten/i);
+    }
+  });
+
   it.each(deprecatedDietCases)("rejects deprecated diet alias: $label", ({ value }) => {
     const result = DecideFitInputSchema.safeParse({
       compass_id: "rest_xyz789",
@@ -123,6 +93,47 @@ describe("canonical Compass input schemas", () => {
       expect(result.error.issues.map((issue) => issue.message).join("\n")).toContain("diet must be one of");
       expect(result.error.issues.map((issue) => issue.message).join("\n")).toContain("strict_vegan");
     }
+  });
+
+  it("agrees with REST on mutually exclusive search and identity inputs", () => {
+    expect(
+      SearchInputSchema.safeParse({
+        query: "vegan ramen",
+        dish: "ramen",
+        location: { lat: 43.6, lng: -116.2 },
+        place: { country_code: "US", region: "ID", city: "Boise" },
+      }).success,
+    ).toBe(false);
+
+    expect(
+      EnrichInputSchema.safeParse({
+        name: "Ramen House",
+        place: { country_code: "US", region: "ID", city: "Boise" },
+        dish: "ramen",
+      }).success,
+    ).toBe(true);
+
+    expect(
+      EnrichInputSchema.safeParse({
+        compass_id: "rest_xyz789",
+        google_place_id: "ChIJExample",
+      }).success,
+    ).toBe(false);
+
+    expect(
+      DecideFitInputSchema.safeParse({
+        google_place_id: "ChIJExample",
+        user_profile: { diet: "vegan_options" },
+      }).success,
+    ).toBe(true);
+
+    expect(
+      DecideFitInputSchema.safeParse({
+        compass_id: "rest_xyz789",
+        google_place_id: "ChIJExample",
+        user_profile: { diet: "strict_vegan" },
+      }).success,
+    ).toBe(false);
   });
 
   it("rejects stale request field names instead of stripping them", () => {

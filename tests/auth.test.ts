@@ -5,7 +5,6 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_BASE_URL,
   MISSING_API_KEY_MESSAGE,
-  redactApiKey,
   resolveApiKey,
   resolveBaseUrl,
 } from "../src/auth.js";
@@ -46,10 +45,5 @@ describe("auth resolution", () => {
     expect(resolveBaseUrl({ env: { COMPASS_BASE_URL: "https://env.example.com/" }, homeDir })).toBe("https://env.example.com");
     expect(resolveBaseUrl({ env: {}, homeDir })).toBe("https://staging.example.com");
     expect(resolveBaseUrl({ env: {}, homeDir: tempHome() })).toBe(DEFAULT_BASE_URL);
-  });
-
-  it("redacts API keys without exposing the full value", () => {
-    expect(redactApiKey("cmp_test_abcdef123456")).toBe("cmp_...3456");
-    expect(redactApiKey("short")).toBe("****");
   });
 });

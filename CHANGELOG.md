@@ -1,10 +1,20 @@
 # Changelog
 
-## 0.3.2 - 2026-10-06
+## 0.4.0 - 2026-10-19
+- New package name `@compassfoodtech/mcp`. It replaces `@compass-food/mcp`, which stays at 0.3.1 and gets no further updates. Install with `npx -y @compassfoodtech/mcp`.
+- Match Compass API contract 1.22.0. Includes all unpublished 0.3.2 changes below.
+- Search: `dish`, structured `place`, `include_cuisine_matches`, `client_ref`, and `fully_vegan_only` inputs; `vegan_dining`, `dish_match`, `nearest_match`, `named_match`, `coverage`, and `query_interpretation` outputs.
+- Enrich: exact `google_place_id` lookup, `name` plus `place`, and `dish` inputs. The output now describes `match_candidates` and `match_confidence` (previously documented under wrong names) and `identity_status`.
+- Decide: `google_place_id` input and `vegan_options` diet alias. The output schema now accepts the identifier outcome (`resolution` and `coverage`, no decision) returned when a Google Place ID does not select one restaurant; MCP clients previously rejected it.
+- Output schemas only require fields every response shape carries and allow additional fields, so additive API changes do not break clients.
+- `menu_collected_at` replaces the old menu observation fields. No Refresh tool. Retired diet values are accepted but not listed.
+- Missing-key message names both places a key can go.
+
+## 0.3.2 - 2026-10-06 (never published)
 - Point a missing API key at instant signup. The message is one sentence plus the two config lines, with no sample key.
 - Send `X-Compass-Client: mcp/0.3.2` on every Compass request.
 - Change the omitted `exclude_cross_contamination` Decide default from true to false. Callers that want the old unknown result must send true.
-- Drop request diet values `nut_free`, `dairy_free`, `egg_free`, and `shellfish_free`, and drop `user_profile.allergens`. Those fields are not part of the launch API contract.
+- Drop four request diet values and one user profile field that are not part of the launch API contract.
 
 ## 0.3.1 - 2026-05-13
 - Add descriptions to all MCP tool parameters, including nested user profile and location fields, so registries and clients can guide tool use more clearly.
@@ -27,7 +37,7 @@
 ## 0.2.2 - 2026-05-03
 - Fix `compass_decide_fit` and `compass_search` diet enum values to match the Compass DaaS API `COMPASS_DIETS` contract.
 - Replace legacy `vegan_strict` with `strict_vegan`.
-- Remove API-invalid diet values `vegan_friendly` and `omnivore`; add the API-supported dietary rule values `gluten_free`, `halal`, `kosher`, `low_fodmap`, `nut_free`, `dairy_free`, `egg_free`, and `shellfish_free`.
+- Remove API-invalid diet values `vegan_friendly` and `omnivore`; add the dietary values the API accepted at the time.
 - Bump MCP server identification version to `0.2.2`.
 
 ## 0.2.1 - 2026-05-02

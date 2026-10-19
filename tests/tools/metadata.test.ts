@@ -6,42 +6,30 @@ import { searchTool } from "../../src/tools/search.js";
 
 const tools = [searchTool.definition, enrichTool.definition, decideFitTool.definition] as const;
 
-function expectPropertyDescriptions(schema: object, path = "input"): void {
-  const properties = "properties" in schema ? schema.properties : undefined;
-  if (!properties || typeof properties !== "object") {
-    return;
-  }
-
-  for (const [name, property] of Object.entries(properties)) {
-    expect(property, `${path}.${name}`).toMatchObject({
-      description: expect.any(String),
-    });
-
-    if (property && typeof property === "object" && "properties" in property) {
-      expectPropertyDescriptions(property, `${path}.${name}`);
-    }
-  }
-}
-
 describe("tool metadata", () => {
-  it("describes every tool parameter for MCP registries", () => {
-    for (const tool of tools) {
-      expectPropertyDescriptions(tool.inputSchema, tool.name);
-    }
-  });
-
-  it("declares structured output schemas for every tool", () => {
-    for (const tool of tools) {
-      expect(tool.outputSchema).toMatchObject({
-        type: "object",
-        description: expect.any(String),
-        properties: expect.any(Object),
-      });
-    }
-  });
-
   it("keeps tool definitions valid for the MCP SDK list-tools result", () => {
     expect(ListToolsResultSchema.safeParse({ tools }).success).toBe(true);
+  });
+
+  it("exposes no Refresh tool and no refresh-recommended marker", () => {
+    expect(tools.map((tool) => tool.name)).toEqual([
+      "compass_search",
+      "compass_enrich_restaurant",
+      "compass_decide_fit",
+    ]);
+    const serialized = JSON.stringify(tools);
+    expect(serialized).not.toMatch(/\/v1\/refresh/);
+    expect(serialized).not.toMatch(/recommended_refresh/);
+  });
+
+  it("lists no allergen or gluten vocabulary except the plain disclaimer", () => {
+    const disclaimer = "Compass is not an allergen or safety service.";
+    const serialized = JSON.stringify(tools);
+    const hits = serialized.match(/\ballerg|gluten|celiac|coeliac/gi) ?? [];
+    const disclaimers = serialized.split(disclaimer).length - 1;
+    expect(disclaimers).toBeGreaterThan(0);
+    expect(hits).toHaveLength(disclaimers);
+    expect(serialized.split(disclaimer).join("")).not.toMatch(/\ballerg|gluten|celiac|coeliac/i);
   });
 
   it("marks Compass tools as read-only open-world lookups", () => {

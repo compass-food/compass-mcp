@@ -1,20 +1,20 @@
 {
-  "name": "@compass-food/mcp",
-  "version": "0.3.2",
+  "name": "@compassfoodtech/mcp",
+  "version": "0.4.0",
   "license": "MIT",
   "description": "MCP server for Compass DaaS - explainable dietary intelligence for AI agents",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/compass-food/compass-mcp.git"
+  },
+  "homepage": "https://compassfoodtechnologies.com/docs/mcp",
+  "bugs": {
+    "email": "support@compassfoodtechnologies.com"
+  },
   "type": "module",
   "main": "dist/index.js",
   "bin": {
     "compass-mcp": "dist/index.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/compass-food/compass-mcp.git"
-  },
-  "homepage": "https://compassfoodtechnologies.com",
-  "bugs": {
-    "url": "https://github.com/compass-food/compass-mcp/issues"
   },
   "files": [
     "dist",
@@ -24,7 +24,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check:package": "node scripts/check-package.mjs"
   },
   "engines": {
     "node": ">=18"

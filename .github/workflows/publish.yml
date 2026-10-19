@@ -1,0 +1,73 @@
+# Publishes @compassfoodtech/mcp to npm when a version tag (v0.4.1, ...) is pushed.
+#
+# Uses npm trusted publishing: npm checks GitHub's signed identity for this
+# exact repository and workflow file, so no npm token is stored anywhere.
+# Provenance is attached automatically because the repository is public.
+#
+# This file is canonical in the private monorepo at compass-mcp/.github/ and is
+# mirrored to the root of github.com/compass-food/compass-mcp, the only place
+# it runs. npm's trusted publisher must name that repository and the workflow
+# filename "publish.yml".
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: publish-npm
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'compass-food/compass-mcp'
+    runs-on: ubuntu-latest
+    # Required reviewer on this environment is the package owner, so every
+    # publish waits for that person's approval. npm's trusted publisher names
+    # the same environment and rejects publishes from anywhere else.
+    environment: npm-publish
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Require npm 11.5.1 or newer (trusted publishing)
+        run: |
+          node -e '
+            const [a, b, c] = process.argv[1].split(".").map(Number);
+            const ok = a > 11 || (a === 11 && (b > 5 || (b === 5 && c >= 1)));
+            if (!ok) { console.error(`npm ${process.argv[1]} is too old for trusted publishing`); process.exit(1); }
+          ' "$(npm --version)"
+
+      - name: Require tag to match package.json version
+        run: |
+          version="$(node -p 'require("./package.json").version')"
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match package.json version ${version}"
+            exit 1
+          fi
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # Unit and contract tests need the private monorepo and gate merges there;
+      # this repo only receives trees that passed them.
+      - name: Check built tool list
+        run: node scripts/check-package.mjs
+
+      - name: Publish
+        run: npm publish --access public

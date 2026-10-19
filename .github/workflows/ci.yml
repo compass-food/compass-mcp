@@ -21,10 +21,14 @@ jobs:
           cache: npm
 
       - name: Install
-        run: npm install
+        run: npm ci
 
       - name: Build
         run: npm run build
 
-      - name: Test
-        run: npm test
+      # Unit and contract tests need the private monorepo and gate merges there.
+      - name: Check built tool list
+        run: node scripts/check-package.mjs
+
+      - name: Pack
+        run: npm pack --dry-run

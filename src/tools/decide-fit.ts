@@ -16,7 +16,7 @@ export const decideFitTool = {
     name: "compass_decide_fit",
     title: "Decide restaurant fit",
     description:
-      'Conservative fit decision for a restaurant against a user dietary profile. Returns "fit", "not_fit", or "unknown" with reason codes, evidence, and user wording. Returns "unknown" rather than overclaiming.',
+      'Conservative fit decision for one restaurant against a user dietary profile. Send exactly one of compass_id or google_place_id, plus an optional client_ref. Returns "fit", "not_fit", or "unknown". Compass judges strict_vegan (and its alias vegan_options) and vegetarian; other accepted diets always return unknown with DIET_NOT_SUPPORTED. source_freshness has signal ages only.',
     inputSchema: decideFitInputJsonSchema,
     outputSchema: decideFitOutputJsonSchema,
     annotations: readOnlyToolAnnotations("Decide restaurant fit"),
