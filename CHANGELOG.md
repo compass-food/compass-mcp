@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.1 - 2026-10-20
+- First release published from GitHub Actions with npm trusted publishing and provenance. No functional change from 0.4.0.
+
 ## 0.4.0 - 2026-10-19
 - New package name `@compassfoodtech/mcp`. It replaces `@compass-food/mcp`, which stays at 0.3.1 and gets no further updates. Install with `npx -y @compassfoodtech/mcp`.
 - Match Compass API contract 1.22.0. Includes all unpublished 0.3.2 changes below.
