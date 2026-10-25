@@ -1,6 +1,6 @@
 # Compass DaaS MCP
 
-[![Smithery badge](https://smithery.ai/badge/compassfoodtech/compass-mcp)](https://smithery.ai/servers/compassfoodtech/compass-mcp)
+[![LightNow capabilities](https://lightnow.ai/badge/io.github.compass-food/compass-mcp)](https://lightnow.ai/servers/io.github.compass-food/compass-mcp)
 
 MCP server for Compass DaaS. It exposes three read-only restaurant tools (search, enrich, decide fit) over the Model Context Protocol and calls the Compass REST API with your API key. Coverage is the 50 US states and Washington, DC.
 
